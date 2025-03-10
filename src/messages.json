@@ -1,0 +1,53 @@
+[
+    {
+      "title": "Welcome to the platform!",
+      "content": "Thank you for joining our service. We're excited to have you here. Please let us know if you need any help getting started.",
+      "received": "1 day ago"
+    },
+    {
+      "title": "Reminder: Upcoming Event",
+      "content": "Don't forget, the webinar on the new features will take place tomorrow at 2 PM. Be sure to register if you haven't already!",
+      "received": "1 day ago"
+    },
+    {
+      "title": "Security Update",
+      "content": "We have just released an important security update for the platform. Please update your app to the latest version to ensure your data is protected.",
+      "received": "2 days ago"
+    },
+    {
+      "title": "Customer Support Follow-up",
+      "content": "We wanted to follow up on your recent inquiry about your account. If you have any further questions, feel free to reach out!",
+      "received": "3 days ago"
+    },
+    {
+      "title": "Account Verification",
+      "content": "Your account has been successfully verified. You can now access all premium features of the platform.",
+      "received": "4 days ago"
+    },
+    {
+      "title": "Scheduled Maintenance",
+      "content": "We will be performing scheduled maintenance on the platform this Sunday at 11 PM. Expect a brief downtime.",
+      "received": "5 days ago"
+    },
+    {
+      "title": "New Feature Launch",
+      "content": "A new feature has been launched! Now you can customize your dashboard for a more personalized experience.",
+      "received": "6 days ago"
+    },
+    {
+      "title": "Feedback Request",
+      "content": "We'd love to hear your thoughts on the new platform update. Please fill out the short survey to help us improve.",
+      "received": "1 week ago"
+    },
+    {
+      "title": "Password Reset",
+      "content": "Your password has been successfully reset. If you did not request this change, please contact support immediately.",
+      "received": "1 week ago"
+    },
+    {
+      "title": "Feature Tip: Shortcuts",
+      "content": "Did you know you can use keyboard shortcuts to navigate faster? Check out the full list in the settings!",
+      "received": "2 weeks ago"
+    }
+  ]
+  

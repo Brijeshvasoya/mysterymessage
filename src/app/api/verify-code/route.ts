@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     const decodedUsername = decodeURIComponent(username);
     const user = await UserModel.findOne({
       username: decodedUsername,
-      isVerified: true,
+      isVerified: false,
     });
     if (!user) {
       return new Response("User not found", { status: 404 });

@@ -8,8 +8,7 @@ import { useDebounceCallback } from "usehooks-ts";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { SignUpSchema } from "@/schemas/signUpSchema";
-import axios, { AxiosError } from "axios";
-import { ApiResponse } from "@/types/ApiResponse";
+import axios from "axios";
 import { Loader2 } from "lucide-react";
 import {
   Form,
@@ -29,6 +28,7 @@ const page = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showcPassword, setShowcPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
   const debounced = useDebounceCallback(setUsername, 300);
   const router = useRouter();
   const form = useForm<z.infer<typeof SignUpSchema>>({
@@ -51,9 +51,9 @@ const page = () => {
           );
           setUsernameMsg(response.data);
         } catch (error) {
-          const axiosError = error as AxiosError<ApiResponse>;
+          const axiosError = error as any;
           setUsernameMsg(
-            axiosError.response?.data.message || "Failed to check username"
+            axiosError.response?.data || "Failed to check username"
           );
         } finally {
           setIsCheckingUsername(false);
@@ -64,16 +64,32 @@ const page = () => {
   }, [username]);
 
   const onSubmit = async (data: z.infer<typeof SignUpSchema>) => {
+    if(data.password !== data.cpassword) {
+      setPasswordError("Passwords do not match");
+      setIsSubmitting(true);
+      document.getElementById("cpassword")?.focus();
+      return;
+    }
     setIsSubmitting(true);
     try {
-      const response = await axios.post<ApiResponse>(`/api/sign-up`, data);
+      const response = await axios.post(`/api/sign-up`, data);
       console.log(response);
-      toast.success(response.data.message);
+      toast.success(response.data,{
+        style:{
+          backgroundColor: 'green',
+          color: 'white'
+        }
+      });
       router.replace(`/verify/${username}`);
     } catch (error) {
       console.log(error);
-      const axiosError = error as AxiosError<ApiResponse>;
-      toast.error(axiosError.response?.data.message || "Failed to sign up");
+      const axiosError = error as any;
+      toast.error(axiosError.response?.data || "Failed to sign up",{
+        style:{
+          backgroundColor: 'red',
+          color: 'white'
+        }
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -171,6 +187,7 @@ const page = () => {
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
+                          onClick={()=>setIsSubmitting(false)}
                           placeholder="Enter your Password"
                           {...field}
                           className="rounded-xl border-gray-200 bg-white/50 backdrop-blur-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pl-4 pr-4 py-2 group-hover:shadow-md"
@@ -200,6 +217,7 @@ const page = () => {
                       <div className="relative">
                         <Input
                           type={showcPassword ? "text" : "password"}
+                          onClick={()=>setIsSubmitting(false)}
                           placeholder="Enter your Confirm Password"
                           {...field}
                           className="rounded-xl border-gray-200 bg-white/50 backdrop-blur-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pl-4 pr-4 py-2 group-hover:shadow-md"
@@ -214,11 +232,15 @@ const page = () => {
                       </div>
                     </FormControl>
                     <FormMessage className="text-red-500 text-sm ml-1" />
+                    {passwordError && (
+                      <p className="text-red-500 text-sm ml-1">{passwordError}</p>
+                    )}
                   </FormItem>
                 )}
               />
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="h-10 w-auto px-6 cursor-pointer text-center bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white py-3.5 rounded-xl font-medium hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-70 disabled:hover:scale-100 relative group overflow-hidden shadow-lg ml-auto flex items-center justify-center"
               >
                 <div className="absolute inset-0 bg-white/20 rounded-xl transform group-hover:translate-x-full transition-transform duration-300"></div>
