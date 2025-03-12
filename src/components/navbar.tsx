@@ -4,10 +4,26 @@ import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { User } from "next-auth";
 import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
-const navbar = () => {
+const Navbar = () => {
   const { data: session } = useSession();
-  const user: User = session?.user;
+  const user: User | undefined = session?.user;
+  const router = useRouter();
+  const handleLogout = async () => {
+    await signOut({
+      callbackUrl: "/",
+    }).then(() => {
+      router.push("/");
+      toast.success("Logged out successfully", {
+        style: {
+          backgroundColor: "green",
+          color: "white",
+        },
+      });
+    });
+  };
   return (
     <nav className="p-4 md:p-6 shadow-md">
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
@@ -16,8 +32,13 @@ const navbar = () => {
         </a>
         {session ? (
           <>
-            <span className="mr-4">Welcome, {user?.name || user?.email}</span>
-            <Button className="w-full md:w-auto cursor-pointer" onClick={() => signOut()}>
+            <span className="mr-4">
+              Welcome, {user?.name || user?.email || "Guest"}
+            </span>
+            <Button
+              className="w-full md:w-auto cursor-pointer"
+              onClick={handleLogout}
+            >
               Logout
             </Button>
           </>
@@ -31,4 +52,4 @@ const navbar = () => {
   );
 };
 
-export default navbar;
+export default Navbar;

@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     if (!user) {
       return new Response("User not found", { status: 404 });
     }
-    return Response.json({success:true,messages:user[0].messages}, { status: 200 });
+    return Response.json({success:true,messages:user[0]?.messages}, { status: 200 });
   } catch (error) {
     console.log(error, "Error accepting messages");
     return new Response("Internal Server Error", { status: 500 });

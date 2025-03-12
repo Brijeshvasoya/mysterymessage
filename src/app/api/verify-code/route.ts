@@ -16,9 +16,11 @@ export async function POST(request: Request) {
     if (user.verifyCode !== verifyCode) {
       return new Response("Invalid verify code", { status: 400 });
     }
-
+    console.log(new Date(user.verifyCodeExpired) < new Date());
     if (new Date(user.verifyCodeExpired) < new Date()) {
-      return new Response("Verify code expired please signup again", { status: 400 });
+      return new Response("Verify code expired please signup again", {
+        status: 400,
+      });
     }
     user.isVerified = true;
     await user.save();

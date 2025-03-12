@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
 
-const page = () => {
+const Page = () => {
   const [username, setUsername] = useState("");
   const [usernameMsg, setUsernameMsg] = useState("");
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
@@ -73,8 +73,7 @@ const page = () => {
     setIsSubmitting(true);
     try {
       const response = await axios.post(`/api/sign-up`, data);
-      console.log(response);
-      toast.success(response.data,{
+      toast.success(response.data?.message,{
         style:{
           backgroundColor: 'green',
           color: 'white'
@@ -82,9 +81,8 @@ const page = () => {
       });
       router.replace(`/verify/${username}`);
     } catch (error) {
-      console.log(error);
       const axiosError = error as any;
-      toast.error(axiosError.response?.data || "Failed to sign up",{
+      toast.error(axiosError.response?.data?.message || "Failed to sign up",{
         style:{
           backgroundColor: 'red',
           color: 'white'
@@ -276,4 +274,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

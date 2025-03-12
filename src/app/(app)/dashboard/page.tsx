@@ -3,7 +3,7 @@ import MessageCard from "@/components/MessageCard";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { Message, User } from "@/model/User";
+import { Message } from "@/model/User";
 import { AcceptMessageSchema } from "@/schemas/acceptMessageSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
@@ -12,13 +12,15 @@ import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
-const page = () => {
+const Page = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSwitchLoading, setIsSwitchLoading] = useState(false);
   const { data: session } = useSession();
-  const {username} = session?.user as User
+  const router = useRouter();
+  const username = session?.user?.username
   const baseUrl=`${window.location.protocol}//${window.location.host}`
   const profileUrl = `${baseUrl}/u/${username}`
   const form = useForm({
@@ -26,11 +28,9 @@ const page = () => {
   });
   const { register, watch, setValue } = form;
   const acceptMessages = watch("acceptMessages");
-
   const handleDeleteMessage = (messageId: string) => {
     setMessages(messages.filter((message) => message._id !== messageId));
   };
-
   const fetchAcceptMessage = useCallback(async () => {
     setIsSwitchLoading(true);
     try {
@@ -81,15 +81,17 @@ const page = () => {
   );
 
   useEffect(() => {
-    if (!session || !session.user) return;
+    if (!session || !session.user){
+      return;
+    };
     fetchMessages();
     fetchAcceptMessage();
-  }, [session, setValue, fetchMessages, fetchAcceptMessage]);
+  }, [router, session, setValue, fetchMessages, fetchAcceptMessage]);
 
   const handleSwtchChange = async () => {
     try {
       const response = await axios.post("/api/accept-messages", {
-        acceptMessages: !acceptMessages,
+        acceptingMessages: !acceptMessages,
       });
       setValue("acceptMessages", !acceptMessages);
       toast.success("Messages accept status updated successfully", {
@@ -123,7 +125,6 @@ const page = () => {
   };
   
 
-  if (!session || !session.user) return <div>Please login first</div>;
   return (
     <div className="my-8 mx-4 md:mx-8 lg:mx-auto p-6 bg-gray-100 rounded w-full max-w-6xl">
       <h1 className="text-4xl font-bold mb-4">User Dashboard</h1>
@@ -139,7 +140,7 @@ const page = () => {
           <Button onClick={copyToClipboard} className="btn btn-primary cursor-pointer">Copy</Button>
         </div>
       </div>
-      <div className="mb-4">
+      <div className="mb-4 cursor-pointer">
         <Switch
           {...register("acceptMessages")}
           checked={acceptMessages}
@@ -167,7 +168,7 @@ const page = () => {
           <RefreshCcw className="h-4 w-4" />
         )}
       </Button>
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-6">
         {messages.length > 0 ? (
           messages.map((message, index) => (
             <MessageCard
@@ -184,4 +185,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

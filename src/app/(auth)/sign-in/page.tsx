@@ -3,11 +3,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { SignInSchema } from "@/schemas/signInSchema";
-import axios from "axios";
 import { Loader2 } from "lucide-react";
 import {
   Form,
@@ -21,11 +20,11 @@ import { Input } from "@/components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
 import { signIn } from "next-auth/react";
 
-const page = () => {
+const Page = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  
+
   const form = useForm<z.infer<typeof SignInSchema>>({
     resolver: zodResolver(SignInSchema),
     defaultValues: {
@@ -37,34 +36,35 @@ const page = () => {
   const onSubmit = async (data: z.infer<typeof SignInSchema>) => {
     setIsSubmitting(true);
     try {
-      const result = await signIn('credentials',{
-        redirect:false,
-        identifier:data.identifier,
-        password:data.password
-      })
-      if(result?.error){
-        toast.error(result.error,{
-          style:{
-            backgroundColor: 'red',
-            color: 'white'
-          }
-        })
-      }
-      if(result?.ok){
-        toast.success("Login successful",{
-          style:{
-            backgroundColor: 'green',
-            color: 'white'
-          }
+      const result = await signIn("credentials", {
+        redirect: false,
+        identifier: data.identifier,
+        password: data.password,
+      });
+      if (result?.error) {
+        toast.error(result.error, {
+          style: {
+            backgroundColor: "red",
+            color: "white",
+          },
         });
-        router.replace('/dashboard');
+      }
+      if (result?.ok) {
+        toast.success("Login successful", {
+          style: {
+            backgroundColor: "green",
+            color: "white",
+          },
+        });
+        router.replace("/dashboard");
       }
     } catch (error) {
-      toast.error("Something went wrong",{
-        style:{
-          backgroundColor: 'red',
-          color: 'white'
-        }
+      console.error(error);
+      toast.error("Something went wrong", {
+        style: {
+          backgroundColor: "red",
+          color: "white",
+        },
       });
     } finally {
       setIsSubmitting(false);
@@ -125,7 +125,7 @@ const page = () => {
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
-                          onClick={()=>setIsSubmitting(false)}
+                          onClick={() => setIsSubmitting(false)}
                           placeholder="Enter your Password"
                           {...field}
                           className="rounded-xl border-gray-200 bg-white/50 backdrop-blur-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pl-4 pr-4 py-2 group-hover:shadow-md"
@@ -160,10 +160,16 @@ const page = () => {
               </button>
             </form>
           </Form>
+          <div className="text-center">
+            <span className="text-gray-700">Don't have an account? </span>
+            <Link className="text-blue-600 hover:underline" href="/sign-up">
+              Sign Up
+            </Link>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default page;
+export default Page;

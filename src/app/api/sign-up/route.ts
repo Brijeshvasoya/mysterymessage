@@ -40,13 +40,13 @@ export async function POST(request: Request) {
         const hashPassword = await bcrypt.hash(password, 10);
         existingEmail.password = hashPassword;
         existingEmail.verifyCode = verifyCode;
-        existingEmail.verifyCodeExpired = new Date(Date.now() + 3600000);
+        existingEmail.verifyCodeExpired = new Date(Date.now() + 600000);
         await existingEmail.save();
       }
     } else {
       const hashPassword = await bcrypt.hash(password, 10);
       const expiryDate = new Date();
-      expiryDate.setHours(expiryDate.getHours() + 1);
+      expiryDate.setMinutes(expiryDate.getMinutes() + 10);
       const newUser = new UserModel({
         username,
         email,
