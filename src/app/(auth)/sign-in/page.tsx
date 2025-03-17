@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { SignInSchema } from "@/schemas/signInSchema";
@@ -23,6 +23,7 @@ import { signIn } from "next-auth/react";
 const Page = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isClient, setIsClient] = useState(false); // to check if it's client-side
   const router = useRouter();
 
   const form = useForm<z.infer<typeof SignInSchema>>({
@@ -32,6 +33,11 @@ const Page = () => {
       password: "",
     },
   });
+
+  // Ensuring this logic runs only on the client-side
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const onSubmit = async (data: z.infer<typeof SignInSchema>) => {
     setIsSubmitting(true);
@@ -68,9 +74,14 @@ const Page = () => {
       });
     } finally {
       setIsSubmitting(false);
-      form.reset({ identifier: '', password: '' });
+      form.reset({ identifier: "", password: "" });
     }
   };
+
+  if (!isClient) {
+    return null; // Ensure this part doesn't render during SSR
+  }
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-[conic-gradient(at_top_right,_var(--tw-gradient-stops))] from-blue-100 via-indigo-200 to-purple-300 p-4 sm:p-6 md:p-8">
       <div className="w-full max-w-md relative">
@@ -132,7 +143,7 @@ const Page = () => {
                           className="rounded-xl border-gray-200 bg-white/50 backdrop-blur-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pl-4 pr-4 py-2 group-hover:shadow-md"
                         />
                         <div
-                          className="absolute right-4 top-2 text-blue-600  flex items-center cursor-pointer"
+                          className="absolute right-4 top-2 text-blue-600 flex items-center cursor-pointer"
                           onClick={() => setShowPassword(!showPassword)}
                         >
                           {showPassword ? <EyeOff /> : <Eye />}

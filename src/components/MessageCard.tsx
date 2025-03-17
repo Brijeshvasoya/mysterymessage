@@ -67,8 +67,7 @@ const MessageCard = ({ message, onMessageDelete, username, fetchMessages }: Mess
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button
-              variant="destructive"
-              className="p-2 cursor-pointer relative -top-6 left-27"
+              className="p-2 bg-red-500 cursor-pointer relative -top-6 left-27 hover:bg-red-700"
             >
               <X className="w-5 h-5" />
             </Button>

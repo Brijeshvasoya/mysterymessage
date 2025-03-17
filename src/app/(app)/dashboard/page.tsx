@@ -6,7 +6,6 @@ import { Switch } from "@/components/ui/switch";
 import { Message } from "@/model/User";
 import { AcceptMessageSchema } from "@/schemas/acceptMessageSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
 import { Loader2, RefreshCcw } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
@@ -14,7 +13,10 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useMutation, useLazyQuery } from "@apollo/client";
-import { ACCEPT_MESSAGES_STATUS, GET_MESSAGES } from "@/app/(app)/dashboard/query";
+import {
+  ACCEPT_MESSAGES_STATUS,
+  GET_MESSAGES,
+} from "@/app/(app)/dashboard/query";
 import { ACCEPT_MESSAGES } from "@/app/(app)/dashboard/mutation";
 
 const Page = () => {
@@ -23,22 +25,23 @@ const Page = () => {
   const [isSwitchLoading, setIsSwitchLoading] = useState(false);
   const { data: session } = useSession();
   const router = useRouter();
+  const [profileUrl, setProfileUrl] = useState("");
+
   const username = session?.user?.username;
-  const baseUrl = `${window.location.protocol}//${window.location.host}`;
-  const profileUrl = `${baseUrl}/u/${username}`;
+
   const form = useForm({
     resolver: zodResolver(AcceptMessageSchema),
   });
   const { register, watch, setValue } = form;
   const acceptMessages = watch("acceptMessages");
-  
+
   const [AcceptingMessages] = useMutation(ACCEPT_MESSAGES);
 
   const [getAcceptingMessages] = useLazyQuery(ACCEPT_MESSAGES_STATUS, {
     variables: { username },
   });
 
-  const [getMessages,data] = useLazyQuery(GET_MESSAGES, {
+  const [getMessages, data] = useLazyQuery(GET_MESSAGES, {
     variables: { username },
     fetchPolicy: "network-only",
   });
@@ -69,16 +72,16 @@ const Page = () => {
       setIsLoading(true);
       setIsSwitchLoading(false);
       try {
-      const response = await getMessages()
-          setMessages(response?.data?.getMessages || []);
-          if (refresh) {
-            toast.success("Messages fetched successfully", {
-              style: {
-                backgroundColor: "green",
-                color: "white",
-              },
-            });
-          }
+        const response = await getMessages();
+        setMessages(response?.data?.getMessages || []);
+        if (refresh) {
+          toast.success("Messages fetched successfully", {
+            style: {
+              backgroundColor: "green",
+              color: "white",
+            },
+          });
+        }
       } catch (error: any) {
         toast.error(error.message || "Failed to fetch messages", {
           style: {
@@ -98,33 +101,38 @@ const Page = () => {
     if (!session || !session.user) {
       return;
     }
+    if (typeof window !== "undefined" && session.user.username) {
+      const baseUrl = `${window.location.protocol}//${window.location.host}`;
+      setProfileUrl(`${baseUrl}/u/${session.user.username}`);
+    }
     fetchMessages();
     fetchAcceptMessage();
   }, [router, session, setValue, fetchMessages, fetchAcceptMessage]);
 
-  if(typeof window !== "undefined"){
-    
-  };
-
   const handleSwtchChange = async () => {
     AcceptingMessages({
-        variables: { input: { username, accept: !acceptMessages } },
-      }).then(() => {
+      variables: { input: { username, accept: !acceptMessages } },
+    })
+      .then(() => {
         setValue("acceptMessages", !acceptMessages);
         toast.success("Messages accept status updated successfully", {
           style: {
             backgroundColor: "green",
             color: "white",
-        },
+          },
+        });
+      })
+      .catch((error) => {
+        toast.error(
+          error.message || "Failed to update messages accept status",
+          {
+            style: {
+              backgroundColor: "red",
+              color: "white",
+            },
+          }
+        );
       });
-    }).catch ((error) => {
-      toast.error(error.message || "Failed to update messages accept status", {
-        style: {
-          backgroundColor: "red",
-          color: "white",
-        },
-      });
-    })
   };
 
   const copyToClipboard = () => {

@@ -30,6 +30,7 @@ const Page = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showcPassword, setShowcPassword] = useState(false);
   const [passwordError, setPasswordError] = useState("");
+  const [isClient, setIsClient] = useState(false);
   const debounced = useDebounceCallback(setUsername, 300);
   const router = useRouter();
   const form = useForm<z.infer<typeof SignUpSchema>>({
@@ -63,6 +64,14 @@ const Page = () => {
     };
     checkUsername();
   }, [username]);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return null;
+  }
 
   const onSubmit = async (submitData: z.infer<typeof SignUpSchema>) => {
     if (submitData.password !== submitData.cpassword) {

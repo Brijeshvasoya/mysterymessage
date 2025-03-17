@@ -1,6 +1,6 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -25,12 +25,21 @@ const VerifyAccount = () => {
   const params = useParams<{ username: string|undefined }>();
   const [isResend, setIsResend] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const form = useForm<z.infer<typeof VerifySchema>>({
     resolver: zodResolver(VerifySchema),
   });
 
   const [VerifyUser] = useMutation(VERIFY_USER);
   const [ResendVerifyCode] = useMutation(RESEND_VERIFY_CODE);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return null;
+  }
 
   const onSubmit = async (data: z.infer<typeof VerifySchema>) => {
     setIsSubmitting(true);
