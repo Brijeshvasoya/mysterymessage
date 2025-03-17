@@ -11,7 +11,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-400 to-gray-50">
       <ApolloProvider client={client}>{children}</ApolloProvider>
     </div>
   );

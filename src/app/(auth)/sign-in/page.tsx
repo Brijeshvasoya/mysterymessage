@@ -23,7 +23,7 @@ import { signIn } from "next-auth/react";
 const Page = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [isClient, setIsClient] = useState(false); // to check if it's client-side
+  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
 
   const form = useForm<z.infer<typeof SignInSchema>>({
@@ -34,7 +34,6 @@ const Page = () => {
     },
   });
 
-  // Ensuring this logic runs only on the client-side
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -79,7 +78,7 @@ const Page = () => {
   };
 
   if (!isClient) {
-    return null; // Ensure this part doesn't render during SSR
+    return null;
   }
 
   return (

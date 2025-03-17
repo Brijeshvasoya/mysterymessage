@@ -9,16 +9,27 @@ import {
 } from "@/components/ui/carousel";
 import messages from "@/messages.json";
 import Autoplay from "embla-carousel-autoplay";
+import { useEffect, useState } from "react";
 
 const Home = () => {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return null;
+  }
+
   return (
     <>
-    <main className="flex-grow flex flex-col items-center justify-center px-4 md:px-24 py-12 bg-gray-100">
+    <main className="flex-grow flex flex-col items-center justify-center px-4 md:px-24 py-12 bg-gradient-to-br from-black via-gray-400 to-gray-50">
       <section className="text-center mb-8 md:mb-12">
-        <h1 className="text-4xl md:text-6xl font-bold text-gray-900">
+        <h1 className="text-4xl md:text-6xl font-bold text-white">
           Drive into the world of Anonymous Conversations
         </h1>
-        <p className="mt-3 md:mt-4 text-lg md:text-xl text-gray-700">
+        <p className="mt-3 md:mt-4 text-lg md:text-xl text-white">
           Explore Mystery Message, a platform for sharing messages and experiences in a unique way.
         </p>
       </section>
@@ -28,7 +39,7 @@ const Home = () => {
             <CarouselItem key={index}>
               <div className="p-4">
                 <Card className="shadow-lg hover:shadow-2xl transition-shadow duration-300 rounded-lg h-auto">
-                  <CardHeader className="bg-gradient-to-r from-blue-800 via-purple-800 to-pink-800 text-white rounded-t-lg">
+                  <CardHeader className="bg-gradient-to-r from-blue-800 via-purple-800 to-pink-800 text-white font-bold">
                     {message.title}
                   </CardHeader>
                   <CardContent className="flex aspect-square items-center justify-center p-2 h-40">

@@ -93,11 +93,11 @@ const MessageCard = ({ message, onMessageDelete, username, fetchMessages }: Mess
           </AlertDialogContent>
         </AlertDialog>
       </CardHeader>
-      <CardDescription className="text-gray-600 p-4">
+      <CardDescription className="text-gray-600 p-4 italic font-['Dancing_Script'] font-extrabold text-lg">
         {message.content}
       </CardDescription>
       <CardFooter className="pt-4">
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-500 text-sm italic font-['Dancing_Script']">
           Posted on: {moment(Number(message.createdAt)).format('DD-MM-YYYY')}
         </p>
       </CardFooter>

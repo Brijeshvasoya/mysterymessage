@@ -26,6 +26,7 @@ const Page = () => {
   const { data: session } = useSession();
   const router = useRouter();
   const [profileUrl, setProfileUrl] = useState("");
+  const [isClient, setIsClient] = useState(false);
 
   const username = session?.user?.username;
 
@@ -109,6 +110,14 @@ const Page = () => {
     fetchAcceptMessage();
   }, [router, session, setValue, fetchMessages, fetchAcceptMessage]);
 
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return null;
+  }
+
   const handleSwtchChange = async () => {
     AcceptingMessages({
       variables: { input: { username, accept: !acceptMessages } },
@@ -146,7 +155,7 @@ const Page = () => {
   };
 
   return (
-    <div className="my-8 mx-4 md:mx-8 lg:mx-auto p-6 bg-gray-100 rounded w-full max-w-6xl">
+    <div className="my-8 mx-4 md:mx-8 lg:mx-auto p-6 rounded-2xl bg-gradient-to-b from-gray-100 via-gray-200 to-gray-450 w-full max-w-6xl">
       <h1 className="text-4xl font-bold mb-4">User Dashboard</h1>
       <div className="mb-4">
         <h2 className="text-lg font-semibold mb-2">Copy Your Unique Link</h2>{" "}
