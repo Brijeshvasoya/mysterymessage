@@ -13,7 +13,7 @@ export const typeDefs = gql`
   type Message {
     id: ID
     content: String
-    createAt: String
+    createdAt: String
   }
 
   type Query {

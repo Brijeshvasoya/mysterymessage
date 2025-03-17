@@ -11,7 +11,7 @@ export const GET_MESSAGES = gql`
     getMessages(username: $username) {
       id
       content
-      createAt
+      createdAt
     }
   }
 `;

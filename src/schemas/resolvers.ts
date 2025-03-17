@@ -164,7 +164,7 @@ export const resolvers = {
         if(!user.isVerified) {
           throw new Error("User is not verified");
         }
-        const newMessage = { content, createAt: new Date() };
+        const newMessage = { content, createdAt: new Date() };
         user.messages.push(newMessage as Message);
         await user.save();
         return newMessage;

@@ -1,9 +1,9 @@
 "use client";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
+  CardFooter
 } from "@/components/ui/card";
 import {
   AlertDialog,
@@ -22,6 +22,7 @@ import { Button } from "./ui/button";
 import { X } from "lucide-react";
 import { Message } from "@/model/User";
 import { toast } from "sonner";
+import moment from "moment";
 
 type MessageCardProps = {
   message: Message;
@@ -61,7 +62,7 @@ const MessageCard = ({ message, onMessageDelete, username, fetchMessages }: Mess
   };
 
   return (
-    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-200 rounded-lg border border-gray-200">
+    <Card className="shadow-lg hover:shadow-2xl transition-shadow duration-200 rounded-lg border border-gray-200">
       <CardHeader className="flex justify-between items-center">
         <AlertDialog>
           <AlertDialogTrigger asChild>
@@ -96,11 +97,11 @@ const MessageCard = ({ message, onMessageDelete, username, fetchMessages }: Mess
       <CardDescription className="text-gray-600 p-4">
         {message.content}
       </CardDescription>
-      <CardContent className="p-4">
+      <CardFooter className="pt-4">
         <p className="text-gray-500 text-sm">
-          Posted on: {new Date(message.createAt).toLocaleDateString()}
+          Posted on: {moment(Number(message.createdAt)).format('DD-MM-YYYY')}
         </p>
-      </CardContent>
+      </CardFooter>
     </Card>
   );
 };

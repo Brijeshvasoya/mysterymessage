@@ -10,7 +10,7 @@ export const SIGN_UP = gql`
       isAcceptingMessages
       messages {
         content
-        createAt
+        createdAt
       }
     }
   }

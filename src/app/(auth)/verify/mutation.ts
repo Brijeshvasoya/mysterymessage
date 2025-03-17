@@ -10,7 +10,7 @@ export const VERIFY_USER = gql`
       isAcceptingMessages
       messages {
         content
-        createAt
+        createdAt
       }
     }
   }

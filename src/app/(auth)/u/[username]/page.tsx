@@ -46,9 +46,9 @@ const Page = () => {
     }
   };
   return (
-    <div className="flex flex-col items-center justify-center min-w-full min-h-screen bg-gradient-to-r from-blue-300 to-purple-500 p-6">
-      <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-md">
-        <h1 className="text-center text-4xl  font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+    <div className="flex flex-col items-center justify-center min-w-full min-h-screen bg-gradient-to-bl from-blue-100 via-gray-100 to-purple-50 p-6">
+      <div className="bg-white shadow-2xl shadow-purple-300 rounded-lg p-6 w-full max-w-md hover:shadow-4xl">
+        <h1 className="text-center text-4xl  font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
           Public Profile of {params.username}
         </h1>
         <p className="text-center text-lg text-gray-600 mb-6">
@@ -57,7 +57,7 @@ const Page = () => {
         <form action="" className="flex flex-col space-y-4">
           <textarea
             placeholder="Enter your message"
-            className="border h-56 border-gray-300 rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border h-56 border-gray-300 rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:shadow-2xl"
             rows={4}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -66,14 +66,14 @@ const Page = () => {
             <button
               type="submit"
               onClick={handleClear}
-              className="bg-blue-600 cursor-pointer text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200"
+              className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 cursor-pointer text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 hover:scale-105"
             >
               Clear
             </button>
             <button
               type="submit"
               onClick={handleSendMsg}
-              className="bg-blue-600 cursor-pointer text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200"
+              className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 cursor-pointer text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 hover:scale-105"
             >
               Send
             </button>

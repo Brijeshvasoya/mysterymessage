@@ -5,7 +5,7 @@ export const SEND_MESSAGE = gql`
     sendMessage(input: $input) {
       id
       content
-      createAt
+      createdAt
     }
   }
 `;

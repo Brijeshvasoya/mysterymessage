@@ -27,13 +27,13 @@ const Navbar = () => {
   return (
     <nav className="p-4 md:p-6 shadow-md">
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
-        <a className="text-xl font-bold mb-4 md:mb-0" href="#">
+        <a className="text-xl font-bold mb-4 md:mb-0">
           Mystery Message
         </a>
         {session ? (
           <>
-            <span className="mr-4">
-              Welcome, {user?.name || user?.email || "Guest"}
+            <span className="mr-4 text-2xl font-bold">
+              Welcome, {user?.name || user?.username || "Guest"}
             </span>
             <Button
               className="w-full md:w-auto cursor-pointer"
