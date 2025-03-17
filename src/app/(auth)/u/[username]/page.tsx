@@ -3,9 +3,12 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import axios from "axios";
+import { SEND_MESSAGE } from "./mutation";
+import { useMutation } from "@apollo/client";
 
 const Page = () => {
-  const params = useParams<{ username: string }>();
+  const [sendMessage] = useMutation(SEND_MESSAGE);
+  const params = useParams<{ username: string|undefined }>();
   const [message, setMessage] = useState("");
 
   const handleClear = (e: React.MouseEvent) => {
@@ -16,9 +19,13 @@ const Page = () => {
   const handleSendMsg = async (e: React.MouseEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`/api/send-message`, {
-        username: params.username,
-        content: message,
+      const response = await sendMessage({
+        variables: {
+          input: {
+            username: params.username,
+            content: message,
+          },
+        },
       });
       toast.success(response.data?.message || "Message sent successfully",{
         style:{
@@ -27,14 +34,15 @@ const Page = () => {
         }
       });
       setMessage("");
-    } catch (error) {
-      const axiosError = error as any;
-      toast.error(axiosError.response?.data || "Failed to send message",{
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send message",{
         style:{
           backgroundColor: 'red',
           color: 'white'
         }
       });
+    } finally {
+      setMessage("");
     }
   };
   return (

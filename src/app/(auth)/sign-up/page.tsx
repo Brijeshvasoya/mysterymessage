@@ -8,7 +8,8 @@ import { useDebounceCallback } from "usehooks-ts";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { SignUpSchema } from "@/schemas/signUpSchema";
-import axios from "axios";
+import { useMutation } from "@apollo/client";
+import { SIGN_UP, CHECK_USERNAME } from "./mutation";
 import { Loader2 } from "lucide-react";
 import {
   Form,
@@ -40,57 +41,60 @@ const Page = () => {
     },
   });
 
+  const [signUp] = useMutation(SIGN_UP);
+  const [checkUsernameUnique] = useMutation(CHECK_USERNAME);
+
   useEffect(() => {
     const checkUsername = async () => {
       if (username) {
         setIsCheckingUsername(true);
         setUsernameMsg("");
-        try {
-          const response = await axios.get(
-            `/api/check-username-unique?username=${username}`
-          );
-          setUsernameMsg(response.data);
-        } catch (error) {
-          const axiosError = error as any;
-          setUsernameMsg(
-            axiosError.response?.data || "Failed to check username"
-          );
-        } finally {
-          setIsCheckingUsername(false);
-        }
+        checkUsernameUnique({ variables: { input: { username } } })
+          .then(() => {
+            setUsernameMsg("Username is available");
+          })
+          .catch((error) => {
+            setUsernameMsg(error.message || "Failed to check username");
+          })
+          .finally(() => {
+            setIsCheckingUsername(false);
+          });
       }
     };
     checkUsername();
   }, [username]);
 
-  const onSubmit = async (data: z.infer<typeof SignUpSchema>) => {
-    if(data.password !== data.cpassword) {
+  const onSubmit = async (submitData: z.infer<typeof SignUpSchema>) => {
+    if (submitData.password !== submitData.cpassword) {
       setPasswordError("Passwords do not match");
       setIsSubmitting(true);
       document.getElementById("cpassword")?.focus();
       return;
     }
     setIsSubmitting(true);
-    try {
-      const response = await axios.post(`/api/sign-up`, data);
-      toast.success(response.data?.message,{
-        style:{
-          backgroundColor: 'green',
-          color: 'white'
-        }
+    delete submitData.cpassword;
+    signUp({ variables: { input: submitData } })
+      .then(() => {
+        toast.success("User created successfully", {
+          style: {
+            backgroundColor: "green",
+            color: "white",
+          },
+        });
+        router.replace(`/verify/${username}`);
+      })
+      .catch((error) => {
+        toast.error(error.message || "Failed to sign up", {
+          style: {
+            backgroundColor: "red",
+            color: "white",
+          },
+        });
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+        form.reset({ username: '', email: '', password: '', cpassword: '' });
       });
-      router.replace(`/verify/${username}`);
-    } catch (error) {
-      const axiosError = error as any;
-      toast.error(axiosError.response?.data?.message || "Failed to sign up",{
-        style:{
-          backgroundColor: 'red',
-          color: 'white'
-        }
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
   };
   return (
     <div className="flex justify-center items-center min-h-screen bg-[conic-gradient(at_top_right,_var(--tw-gradient-stops))] from-blue-100 via-indigo-200 to-purple-300 p-4 sm:p-6 md:p-8">
@@ -185,7 +189,7 @@ const Page = () => {
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
-                          onClick={()=>setIsSubmitting(false)}
+                          onClick={() => setIsSubmitting(false)}
                           placeholder="Enter your Password"
                           {...field}
                           className="rounded-xl border-gray-200 bg-white/50 backdrop-blur-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pl-4 pr-4 py-2 group-hover:shadow-md"
@@ -215,7 +219,7 @@ const Page = () => {
                       <div className="relative">
                         <Input
                           type={showcPassword ? "text" : "password"}
-                          onClick={()=>setIsSubmitting(false)}
+                          onClick={() => setIsSubmitting(false)}
                           placeholder="Enter your Confirm Password"
                           {...field}
                           className="rounded-xl border-gray-200 bg-white/50 backdrop-blur-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pl-4 pr-4 py-2 group-hover:shadow-md"
@@ -231,7 +235,9 @@ const Page = () => {
                     </FormControl>
                     <FormMessage className="text-red-500 text-sm ml-1" />
                     {passwordError && (
-                      <p className="text-red-500 text-sm ml-1">{passwordError}</p>
+                      <p className="text-red-500 text-sm ml-1">
+                        {passwordError}
+                      </p>
                     )}
                   </FormItem>
                 )}

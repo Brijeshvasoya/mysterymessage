@@ -16,31 +16,39 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { DELETE_MESSAGE } from "@/app/(app)/dashboard/mutation";
+import { useMutation } from "@apollo/client";
 import { Button } from "./ui/button";
 import { X } from "lucide-react";
 import { Message } from "@/model/User";
 import { toast } from "sonner";
-import axios from "axios";
 
 type MessageCardProps = {
   message: Message;
   onMessageDelete: (messageId: string) => void;
+  fetchMessages: (shouldRefetch?: boolean) => void;
+  username: string;
 };
 
-const MessageCard = ({ message, onMessageDelete }: MessageCardProps) => {
+const MessageCard = ({ message, onMessageDelete, username, fetchMessages }: MessageCardProps) => {
+
+  const [deleteMessage] = useMutation(DELETE_MESSAGE, {
+    refetchQueries: ["GET_MESSAGES"],
+  });
 
   const handleDeleteConfirm = async () => {
-    const response = await axios.post(`/api/delete-message`,
-      {messageid: message._id})
-    try {
-      toast.success(response?.data||"Message deleted successfully", {
-        style: {
-          backgroundColor: "green",
-          color: "white",
-        },
-      });
-      onMessageDelete(message._id as string);
-    } catch (error) {
+      await deleteMessage({
+        variables: { input: { username, messageId: message.id } }
+      }).then(() => {
+        toast.success("Message deleted successfully", {
+          style: {
+            backgroundColor: "green",
+            color: "white",
+          },
+        });
+        onMessageDelete(message.id);
+        fetchMessages();
+      }).catch ((error) => {
       console.error(error);
       const axiosError = error as any;
       toast.error(axiosError.response?.data || "Failed to delete message",{
@@ -49,7 +57,7 @@ const MessageCard = ({ message, onMessageDelete }: MessageCardProps) => {
           color: 'white'
         }
       });
-    }
+    });
   };
 
   return (
@@ -79,7 +87,7 @@ const MessageCard = ({ message, onMessageDelete }: MessageCardProps) => {
               <AlertDialogAction onClickCapture={handleDeleteConfirm}
                 className="bg-red-600 cursor-pointer hover:bg-red-700 transition duration-200"
               >
-                Continue
+                Delete Message
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

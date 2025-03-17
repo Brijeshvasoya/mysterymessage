@@ -68,6 +68,7 @@ const Page = () => {
       });
     } finally {
       setIsSubmitting(false);
+      form.reset({ identifier: '', password: '' });
     }
   };
   return (

@@ -10,11 +10,13 @@ const MessageSchema:Schema<Message> = new Schema({
         type:String,
         required:true
     },
-    createAt:{
-        type:Date,
-        required:true,
-        default:Date.now
-    }
+    // createAt:{
+    //     type:Date,
+    //     required:true,
+    //     default:Date.now
+    // }
+},{
+    timestamps:true
 })
 
 export interface User extends Document {
@@ -64,6 +66,8 @@ const UserSchema: Schema<User> = new Schema({
     default: true,
   },
   messages: [MessageSchema],
+},{
+    timestamps:true
 });
 
 const UserModel =

@@ -13,6 +13,9 @@ import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useMutation, useLazyQuery } from "@apollo/client";
+import { ACCEPT_MESSAGES_STATUS, GET_MESSAGES } from "@/app/(app)/dashboard/query";
+import { ACCEPT_MESSAGES } from "@/app/(app)/dashboard/mutation";
 
 const Page = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -20,25 +23,37 @@ const Page = () => {
   const [isSwitchLoading, setIsSwitchLoading] = useState(false);
   const { data: session } = useSession();
   const router = useRouter();
-  const username = session?.user?.username
-  const baseUrl=`${window.location.protocol}//${window.location.host}`
-  const profileUrl = `${baseUrl}/u/${username}`
+  const username = session?.user?.username;
+  const baseUrl = `${window.location.protocol}//${window.location.host}`;
+  const profileUrl = `${baseUrl}/u/${username}`;
   const form = useForm({
     resolver: zodResolver(AcceptMessageSchema),
   });
   const { register, watch, setValue } = form;
   const acceptMessages = watch("acceptMessages");
+  
+  const [AcceptingMessages] = useMutation(ACCEPT_MESSAGES);
+
+  const [getAcceptingMessages] = useLazyQuery(ACCEPT_MESSAGES_STATUS, {
+    variables: { username },
+  });
+
+  const [getMessages,data] = useLazyQuery(GET_MESSAGES, {
+    variables: { username },
+    fetchPolicy: "network-only",
+  });
+
   const handleDeleteMessage = (messageId: string) => {
     setMessages(messages.filter((message) => message._id !== messageId));
   };
+
   const fetchAcceptMessage = useCallback(async () => {
     setIsSwitchLoading(true);
     try {
-      const response = await axios.get("/api/accept-messages");
-      setValue("acceptMessages", response.data.isAcceptingMessages);
-    } catch (error) {
-      const axiosError = error as any;
-      toast.error(axiosError.response?.data || "Failed to fetch messages", {
+      const response = await getAcceptingMessages();
+      setValue("acceptMessages", response.data.acceptMessages);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to fetch messages", {
         style: {
           backgroundColor: "red",
           color: "white",
@@ -54,19 +69,18 @@ const Page = () => {
       setIsLoading(true);
       setIsSwitchLoading(false);
       try {
-        const response = await axios.get("/api/get-messages");
-        setMessages(response.data.messages || []);
-        if (refresh) {
-          toast.success("Messages fetched successfully", {
-            style: {
-              backgroundColor: "green",
-              color: "white",
-            },
-          });
-        }
-      } catch (error) {
-        const axiosError = error as any;
-        toast.error(axiosError.response?.data || "Failed to fetch messages", {
+      const response = await getMessages()
+          setMessages(response?.data?.getMessages || []);
+          if (refresh) {
+            toast.success("Messages fetched successfully", {
+              style: {
+                backgroundColor: "green",
+                color: "white",
+              },
+            });
+          }
+      } catch (error: any) {
+        toast.error(error.message || "Failed to fetch messages", {
           style: {
             backgroundColor: "red",
             color: "white",
@@ -81,37 +95,36 @@ const Page = () => {
   );
 
   useEffect(() => {
-    if (!session || !session.user){
+    if (!session || !session.user) {
       return;
-    };
+    }
     fetchMessages();
     fetchAcceptMessage();
   }, [router, session, setValue, fetchMessages, fetchAcceptMessage]);
 
+  if(typeof window !== "undefined"){
+    
+  };
+
   const handleSwtchChange = async () => {
-    try {
-      const response = await axios.post("/api/accept-messages", {
-        acceptingMessages: !acceptMessages,
+    AcceptingMessages({
+        variables: { input: { username, accept: !acceptMessages } },
+      }).then(() => {
+        setValue("acceptMessages", !acceptMessages);
+        toast.success("Messages accept status updated successfully", {
+          style: {
+            backgroundColor: "green",
+            color: "white",
+        },
       });
-      setValue("acceptMessages", !acceptMessages);
-      toast.success("Messages accept status updated successfully", {
+    }).catch ((error) => {
+      toast.error(error.message || "Failed to update messages accept status", {
         style: {
-          backgroundColor: "green",
+          backgroundColor: "red",
           color: "white",
         },
       });
-    } catch (error) {
-      const axiosError = error as any;
-      toast.error(
-        axiosError.response?.data || "Failed to update messages accept status",
-        {
-          style: {
-            backgroundColor: "red",
-            color: "white",
-          },
-        }
-      );
-    }
+    })
   };
 
   const copyToClipboard = () => {
@@ -123,7 +136,6 @@ const Page = () => {
       },
     });
   };
-  
 
   return (
     <div className="my-8 mx-4 md:mx-8 lg:mx-auto p-6 bg-gray-100 rounded w-full max-w-6xl">
@@ -137,7 +149,12 @@ const Page = () => {
             disabled
             className="input input-bordered w-full cursor-pointer p-2 mr-2"
           />
-          <Button onClick={copyToClipboard} className="btn btn-primary cursor-pointer">Copy</Button>
+          <Button
+            onClick={copyToClipboard}
+            className="btn btn-primary cursor-pointer"
+          >
+            Copy
+          </Button>
         </div>
       </div>
       <div className="mb-4 cursor-pointer">
@@ -172,8 +189,10 @@ const Page = () => {
         {messages.length > 0 ? (
           messages.map((message, index) => (
             <MessageCard
-              key={message._id as string}
+              key={index}
               message={message}
+              username={username}
+              fetchMessages={fetchMessages}
               onMessageDelete={handleDeleteMessage}
             />
           ))
