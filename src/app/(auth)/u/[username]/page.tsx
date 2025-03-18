@@ -2,7 +2,6 @@
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import axios from "axios";
 import { SEND_MESSAGE } from "./mutation";
 import { useMutation } from "@apollo/client";
 
@@ -18,6 +17,15 @@ const Page = () => {
 
   const handleSendMsg = async (e: React.MouseEvent) => {
     e.preventDefault();
+    if(message.trim() === ""){
+      toast.error("Message cannot be empty",{
+        style:{
+          backgroundColor: 'red',
+          color: 'white'
+        }
+      });
+      return;
+    }
     try {
       const response = await sendMessage({
         variables: {

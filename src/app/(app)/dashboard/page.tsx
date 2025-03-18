@@ -40,6 +40,7 @@ const Page = () => {
 
   const [getAcceptingMessages] = useLazyQuery(ACCEPT_MESSAGES_STATUS, {
     variables: { username },
+    fetchPolicy: "network-only",
   });
 
   const [getMessages, data] = useLazyQuery(GET_MESSAGES, {
@@ -163,8 +164,10 @@ const Page = () => {
           <input
             type="text"
             value={profileUrl}
-            disabled
-            className="input input-bordered w-full cursor-pointer p-2 mr-2"
+            onClick={copyToClipboard}
+            readOnly
+            title="Click to copy the profile URL"
+            className="input input-bordered w-full cursor-pointer p-2 mr-2 focus:outline-none"
           />
           <Button
             onClick={copyToClipboard}

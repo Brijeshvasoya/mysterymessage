@@ -2,11 +2,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { SignInSchema } from "@/schemas/signInSchema";
+import { ResetPasswordSchema } from "@/schemas/resetPasswordSchema";
+import { useMutation } from "@apollo/client";
+import { RESET_PASSWORD } from "./mutation";
 import { Loader2 } from "lucide-react";
 import {
   Form,
@@ -18,54 +19,57 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
-import { signIn } from "next-auth/react";
 
 const Page = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showcPassword, setShowcPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
-
-  const form = useForm<z.infer<typeof SignInSchema>>({
-    resolver: zodResolver(SignInSchema),
+  const form = useForm<z.infer<typeof ResetPasswordSchema>>({
+    resolver: zodResolver(ResetPasswordSchema),
     defaultValues: {
-      identifier: "",
+      username: "",
+      newPassword: "",
       password: "",
+      cpassword: "",
     },
   });
+
+  const [resetPassword] = useMutation(RESET_PASSWORD);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const onSubmit = async (data: z.infer<typeof SignInSchema>) => {
+  if (!isClient) {
+    return null;
+  }
+
+  const onSubmit = async (submitData: z.infer<typeof ResetPasswordSchema>) => {
+    if (submitData.newPassword !== submitData.cpassword) {
+      setPasswordError("Passwords do not match");
+      setIsSubmitting(false);
+      document.getElementById("cpassword")?.focus();
+      return;
+    }
+    delete submitData.cpassword;
     setIsSubmitting(true);
     try {
-      const result = await signIn("credentials", {
-        redirect: false,
-        identifier: data.identifier,
-        password: data.password,
+      const response = await resetPassword({
+        variables: { input: submitData },
       });
-      if (result?.error) {
-        toast.error(result.error, {
-          style: {
-            backgroundColor: "red",
-            color: "white",
-          },
-        });
-      }
-      if (result?.ok) {
-        toast.success("Login successful", {
-          style: {
-            backgroundColor: "green",
-            color: "white",
-          },
-        });
-        router.replace("/dashboard");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong", {
+      toast.success(response?.data?.resetPassword || "Password reset successfully", {
+        style: {
+          backgroundColor: "green",
+          color: "white",
+        },
+      });
+      router.push("/sign-in");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to reset password", {
         style: {
           backgroundColor: "red",
           color: "white",
@@ -73,13 +77,14 @@ const Page = () => {
       });
     } finally {
       setIsSubmitting(false);
-      form.reset({ identifier: "", password: "" });
     }
+    form.reset({
+      username: "",
+      newPassword: "",
+      password: "",
+      cpassword: "",
+    });
   };
-
-  if (!isClient) {
-    return null;
-  }
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-[conic-gradient(at_top_right,_var(--tw-gradient-stops))] from-blue-100 via-indigo-200 to-purple-300 p-4 sm:p-6 md:p-8">
@@ -90,30 +95,27 @@ const Page = () => {
         <div className="relative w-full bg-white/90 p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white/40 space-y-6 transform hover:scale-[1.01] transition-all duration-300">
           <div className="text-center space-y-2">
             <div className="relative inline-block">
-              <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent animate-gradient-x">
-                Join Mystery Message
+              <h1 className="text-xl mb-2 px-20 font-extrabold tracking-tight lg:text-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent animate-gradient-x">
+                Reset Password
               </h1>
               <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-blue-600/0 via-indigo-600/50 to-purple-600/0"></div>
             </div>
-            <p className="text-gray-600 text-lg">
-              Start your anonymous adventure
-            </p>
           </div>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <FormField
-                name="identifier"
+                name="username"
                 control={form.control}
                 render={({ field }) => (
                   <FormItem className="group">
                     <FormLabel className="text-gray-700 font-medium pl-1">
-                      Email or Username
+                      Username
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
-                          placeholder="Enter your Email or Username"
+                          placeholder="Enter your username"
                           {...field}
                           className="rounded-xl border-gray-200 bg-white/50 backdrop-blur-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pl-4 pr-4 py-2 group-hover:shadow-md"
                         />
@@ -130,27 +132,86 @@ const Page = () => {
                 render={({ field }) => (
                   <FormItem className="group">
                     <FormLabel className="text-gray-700 font-medium pl-1">
-                      Password
+                      Old Password
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
-                          onClick={() => setIsSubmitting(false)}
-                          placeholder="Enter your Password"
+                          placeholder="Enter your old password"
                           {...field}
                           className="rounded-xl border-gray-200 bg-white/50 backdrop-blur-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pl-4 pr-4 py-2 group-hover:shadow-md"
                         />
                         <div
-                          className="absolute right-4 top-2 text-blue-600 flex items-center cursor-pointer"
+                          className="absolute right-4 top-2 text-blue-600  flex items-center cursor-pointer"
                           onClick={() => setShowPassword(!showPassword)}
                         >
                           {showPassword ? <EyeOff /> : <Eye />}
                         </div>
-                        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/0 via-indigo-500/5 to-purple-500/0 group-hover:opacity-100 opacity-0 transition-opacity duration-300 pointer-events-none"></div>
                       </div>
                     </FormControl>
                     <FormMessage className="text-red-500 text-sm ml-1" />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                name="newPassword"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem className="group">
+                    <FormLabel className="text-gray-700 font-medium pl-1">
+                      New Password
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showNewPassword ? "text" : "password"}
+                          placeholder="Enter your new password"
+                          {...field}
+                          className="rounded-xl border-gray-200 bg-white/50 backdrop-blur-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pl-4 pr-4 py-2 group-hover:shadow-md"
+                        />
+                        <div
+                          className="absolute right-4 top-2 text-blue-600  flex items-center cursor-pointer"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
+                        >
+                          {showNewPassword ? <EyeOff /> : <Eye />}
+                        </div>
+                      </div>
+                    </FormControl>
+                    <FormMessage className="text-red-500 text-sm ml-1" />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                name="cpassword"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem className="group">
+                    <FormLabel className="text-gray-700 font-medium pl-1">
+                      Confirm Password
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showcPassword ? "text" : "password"}
+                          placeholder="Confirm your password"
+                          {...field}
+                          className="rounded-xl border-gray-200 bg-white/50 backdrop-blur-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pl-4 pr-4 py-2 group-hover:shadow-md"
+                        />
+                        <div
+                          className="absolute right-4 top-2 text-blue-600  flex items-center cursor-pointer"
+                          onClick={() => setShowcPassword(!showcPassword)}
+                        >
+                          {showcPassword ? <EyeOff /> : <Eye />}
+                        </div>
+                      </div>
+                    </FormControl>
+                    <FormMessage className="text-red-500 text-sm ml-1" />
+                    {passwordError && (
+                      <p className="text-red-500 text-sm ml-1">
+                        {passwordError}
+                      </p>
+                    )}
                   </FormItem>
                 )}
               />
@@ -166,41 +227,11 @@ const Page = () => {
                     <span>Please Wait...</span>
                   </div>
                 ) : (
-                  <span className="relative z-10">Sign In</span>
+                  <span className="relative z-10">Reset Password</span>
                 )}
               </button>
             </form>
           </Form>
-          <div className="text-center">
-            <span className="text-gray-700">Don't have an account? </span>
-            <Link className="text-blue-600 hover:text-purple-600 font-medium transition-colors duration-200 hover:underline decoration-2 underline-offset-2" href="/sign-up">
-              Sign Up
-            </Link>
-          </div>
-          <div className="text-center flex items-center justify-center">
-            <div className="absolute left-0 right-0 top-1/2 h-px "></div>
-            <p className="text-gray-600 relative">
-              <span className="px-4">
-                <Link
-                  href="/reset-password"
-                  className="text-blue-600 hover:text-purple-600 font-medium transition-colors duration-200 hover:underline decoration-2 underline-offset-2"
-                >
-                  Reset Password
-                </Link>
-              </span>
-            </p>
-            <div className="absolute left-0 right-0 top-1/2 h-px "></div>
-            <p className="text-gray-600 relative">
-              <span className="px-4">
-                <Link
-                  href="/forgot-password"
-                  className="text-blue-600 hover:text-purple-600 font-medium transition-colors duration-200 hover:underline decoration-2 underline-offset-2"
-                >
-                  Forgot Password
-                </Link>
-              </span>
-            </p>
-          </div>
         </div>
       </div>
     </div>

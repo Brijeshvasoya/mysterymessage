@@ -1,6 +1,9 @@
 import UserModel from "@/model/User";
 import bcrypt from "bcryptjs";
-import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
+import {
+  sendVerificationEmail,
+  sendForgotPasswordEmail,
+} from "@/helpers/sendVerificationEmail";
 import { Message } from "@/model/User";
 import mongoose from "mongoose";
 
@@ -161,7 +164,7 @@ export const resolvers = {
         if (!user.isAcceptingMessages) {
           throw new Error("User is not accepting messages");
         }
-        if(!user.isVerified) {
+        if (!user.isVerified) {
           throw new Error("User is not verified");
         }
         const newMessage = { content, createdAt: new Date() };
@@ -259,5 +262,73 @@ export const resolvers = {
         throw new Error(error.message || "Internal Server Error");
       }
     },
+    resetPassword: async (
+      _: any,
+      {
+        input,
+      }: { input: { username: string; password: string; newPassword: string } }
+    ) => {
+      const { username, password, newPassword } = await input;
+      try {
+        const user = await UserModel.findOne({ username });
+        if (!user) {
+          throw new Error("User not found");
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+          throw new Error("Invalid Password");
+        }
+        const hashPassword = await bcrypt.hash(newPassword, 10);
+        await UserModel.findOneAndUpdate(
+          { username },
+          { password: hashPassword },
+          { new: true }
+        );
+        return "Password reset successfully";
+      } catch (error: any) {
+        throw new Error(error.message || "Internal Server Error");
+      }
+    },
+    forgotPassword: async (
+      _: any,
+      { input }: { input: { username: string } }
+    ) => {
+      const { username } = await input;
+      try {
+        const user = await UserModel.findOne({ username });
+        if (!user) {
+          throw new Error("User not found");
+        }
+        const emailResponse = await sendForgotPasswordEmail(
+          user.email,
+          user.username,
+          user.verifyCode
+        );
+        if (!emailResponse.success) {
+          throw new Error(emailResponse.message);
+        }
+        return "Password reset email sent successfully";
+      } catch (error: any) {
+        throw new Error(error.message || "Internal Server Error");
+      }
+    },
+    updatePassword:async(_:any,{input}:{input:{username:string,password:string}})=>{
+      const {username,password}=await input;
+      try {
+        const user = await UserModel.findOne({ username });
+        if (!user) {
+          throw new Error("User not found");
+        }
+        const newPassword = await bcrypt.hash(password, 10);
+        await UserModel.findOneAndUpdate(
+          { username },
+          { password: newPassword },
+          { new: true }
+        );
+        return "Password updated successfully";
+      } catch (error: any) {
+        throw new Error(error.message || "Internal Server Error");
+      }
+    }
   },
 };

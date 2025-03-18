@@ -30,6 +30,9 @@ export const typeDefs = gql`
     acceptingMessages(input: AcceptMessagesInput!): String
     deleteMessage(input: DeleteMessageInput!): String
     resendVerifyCode(input: ResendVerifyCodeInput!): String
+    resetPassword(input: ResetPasswordInput!): String
+    forgotPassword(input: ForgotPasswordInput!): String
+    updatePassword(input: UpdatePasswordInput!): String
   }
 
   input CreateUserInput {
@@ -64,5 +67,20 @@ export const typeDefs = gql`
 
   input ResendVerifyCodeInput {
     username: String
+  }
+
+  input ResetPasswordInput {
+    username: String
+    password: String
+    newPassword: String
+  }
+
+  input ForgotPasswordInput {
+    username: String
+  }
+
+  input UpdatePasswordInput {
+    username: String
+    password: String
   }
 `;
