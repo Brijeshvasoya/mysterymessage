@@ -84,7 +84,7 @@ const Page = () => {
     delete submitData.cpassword;
     signUp({ variables: { input: submitData } })
       .then(() => {
-        toast.success("User created successfully", {
+        toast.success("You have successfully signed up Please check your email for verification.", {
           style: {
             backgroundColor: "green",
             color: "white",

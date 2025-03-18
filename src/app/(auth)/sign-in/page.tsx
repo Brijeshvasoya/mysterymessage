@@ -87,7 +87,7 @@ const Page = () => {
         <div className="absolute -top-10 -left-10 w-20 h-20 bg-blue-500/20 rounded-full blur-xl animate-pulse"></div>
         <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-purple-500/20 rounded-full blur-xl animate-pulse delay-700"></div>
 
-        <div className="relative w-full bg-white/90 p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white/40 space-y-6 transform hover:scale-[1.01] transition-all duration-300">
+        <div className="relative w-full bg-gradient-to-b from-gray-100 via-gray-200 to-gray-450 p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white/40 space-y-6 transform hover:scale-[1.01] transition-all duration-300">
           <div className="text-center space-y-2">
             <div className="relative inline-block">
               <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent animate-gradient-x">
